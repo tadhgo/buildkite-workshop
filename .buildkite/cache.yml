@@ -1,0 +1,10 @@
+caches:
+  - name: "npm"
+    cache_key:
+      - "npm"
+      - agent: "os"
+      - agent: "arch"
+        fallback_limit: true
+      - checksum: "package-lock.json"
+    target_paths:
+      - "~/.npm"

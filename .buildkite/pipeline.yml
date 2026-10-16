@@ -1,0 +1,48 @@
+steps:
+  - label: ":eslint: Lint"
+    command:
+      - ".buildkite/scripts/install.sh"
+      - "npm run lint -w web"
+
+  - label: ":jest: Unit"
+    parallelism: 4
+    command:
+      - ".buildkite/scripts/install.sh"
+      - "bktec run"
+    plugins:
+      - tests#v1.0.1:
+          test-runner: jest
+          result-path: jest-results.json
+          test-file-pattern: "web/tests/**/*.test.ts"
+
+  - label: ":bust_in_silhouette: Account"
+    command:
+      - ".buildkite/scripts/install.sh"
+      - "npm run lint -w account"
+      - "npm test -w account"
+
+  - label: ":package: Build"
+    key: build
+    command:
+      - ".buildkite/scripts/install.sh"
+      - "npm run build -w web"
+    artifact_paths: "web/dist/**/*"
+
+  - label: ":playwright: E2E"
+    depends_on: build
+    command:
+      - ".buildkite/scripts/install.sh"
+      - "buildkite-agent artifact download 'web/dist/**' ."
+      - "npx playwright install-deps chromium"
+      - "npx playwright install chromium"
+      - "echo '--- :playwright: Run E2E'"
+      - "npm run e2e -w web"
+      - "buildkite-agent artifact upload web/screenshots/shop.png"
+      - "buildkite-agent annotate --style info --context shop '<img src=\"artifact://web/screenshots/shop.png\" alt=\"Kite Shop\" height=\"300\">'"
+
+  - wait
+
+  - label: ":rocket: Deploy"
+    command: "bash .buildkite/scripts/deploy.sh"
+    env:
+      DEPLOY_KEY: "kite_deploy_not_a_real_key_123"
