@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+*.log
+jest-results.json
+test-results/
+playwright-report/
+screenshots/
+.DS_Store

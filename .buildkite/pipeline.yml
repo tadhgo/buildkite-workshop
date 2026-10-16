@@ -1,0 +1,41 @@
+steps:
+  - label: ":eslint: Lint"
+    command:
+      - ".buildkite/scripts/install.sh"
+      - "npm run lint -w web"
+
+  - label: ":jest: Unit"
+    command:
+      - ".buildkite/scripts/install.sh"
+      - "npm test -w web"
+    soft_fail: true
+
+  - label: ":bust_in_silhouette: Account"
+    command:
+      - ".buildkite/scripts/install.sh"
+      - "npm run lint -w account"
+      - "npm test -w account"
+
+  - label: ":package: Build"
+    key: build
+    command:
+      - ".buildkite/scripts/install.sh"
+      - "npm run build -w web"
+    artifact_paths: "web/dist/**/*"
+
+  - label: ":playwright: E2E"
+    depends_on: build
+    command:
+      - ".buildkite/scripts/install.sh"
+      - "buildkite-agent artifact download 'web/dist/**' ."
+      - "npx playwright install-deps chromium"
+      - "npx playwright install chromium"
+      - "echo '--- :playwright: Run E2E'"
+      - "npm run e2e -w web"
+
+  - wait
+
+  - label: ":rocket: Deploy"
+    command: "bash .buildkite/scripts/deploy.sh"
+    env:
+      DEPLOY_KEY: "kite_deploy_not_a_real_key_123"
