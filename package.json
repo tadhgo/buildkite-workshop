@@ -1,0 +1,25 @@
+{
+  "name": "buildkite-workshop",
+  "private": true,
+  "workspaces": [
+    "web",
+    "account"
+  ],
+  "scripts": {
+    "lint": "npm run lint --workspaces",
+    "test": "npm test --workspaces",
+    "build": "npm run build --workspaces --if-present",
+    "e2e": "npm run e2e --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.19.0",
+    "eslint": "^9.39.5",
+    "globals": "^17.12.0",
+    "jest": "^30.5.2",
+    "ts-jest": "^29.4.14",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.71.0"
+  }
+}
