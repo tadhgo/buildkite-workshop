@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kite Shop</title>
+    <link rel="icon" href="/kite.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="nav">
+      <a class="brand" href="/">
+        <img src="/kite.svg" alt="" width="30" height="30" />
+        <span>Kite Shop</span>
+      </a>
+      <nav class="links">
+        <a href="#kites">Kites</a>
+      </nav>
+      <button class="cart-button" id="cart-toggle" aria-controls="cart" aria-expanded="false">
+        Cart <span class="badge" id="cart-count" data-testid="cart-count">0</span>
+      </button>
+    </header>
+
+    <main id="kites">
+      <h1>Kites</h1>
+      <div class="toolbar">
+        <span class="label">Showing <strong>All kites</strong></span>
+        <span class="muted" id="product-count"></span>
+      </div>
+      <ul id="products" class="products"></ul>
+    </main>
+
+    <aside id="cart" class="cart" hidden>
+      <div class="cart-head">
+        <h2>Your cart</h2>
+        <button class="icon-button" id="cart-close" aria-label="Close cart">✕</button>
+      </div>
+      <p class="muted" id="cart-empty">No kites yet.</p>
+      <ul id="cart-items" class="cart-items"></ul>
+      <p class="cart-total">Total <span id="cart-total" data-testid="cart-total">$0.00</span></p>
+    </aside>
+
+    <footer class="footer">
+      <span>Built for the Buildkite workshop</span>
+      <img src="/buildkite-logo-on-dark.svg" alt="Buildkite" height="18" />
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
