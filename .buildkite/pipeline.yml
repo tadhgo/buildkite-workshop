@@ -1,0 +1,69 @@
+notify:
+  - webhook: "https://webhook.site/YOUR-ID"
+    if: build.branch == "main" && build.state == "failed"
+  - webhook: "https://webhook.site/YOUR-ID"
+    if: build.branch == "main" && build.state == "passed"
+
+steps:
+  - group: ":globe_with_meridians: Web"
+    key: web
+    if_changed: ["web/**", "*.{json,mjs,cjs}", ".buildkite/**"]
+    steps:
+      - label: ":eslint: Lint"
+        command:
+          - ".buildkite/scripts/install.sh"
+          - "npm run lint -w web"
+
+      - label: ":jest: Unit"
+        parallelism: 4
+        command:
+          - ".buildkite/scripts/install.sh"
+          - "bktec run"
+        plugins:
+          - tests#v1.0.1:
+              test-runner: jest
+              result-path: jest-results.json
+              test-file-pattern: "web/tests/**/*.test.ts"
+
+      - label: ":package: Build"
+        key: build
+        command:
+          - ".buildkite/scripts/install.sh"
+          - "npm run build -w web"
+        artifact_paths: "web/dist/**/*"
+
+      - label: ":playwright: E2E"
+        depends_on: build
+        command:
+          - ".buildkite/scripts/install.sh"
+          - "buildkite-agent artifact download 'web/dist/**' ."
+          - "npx playwright install-deps chromium"
+          - "npx playwright install chromium"
+          - "echo '--- :playwright: Run E2E'"
+          - "npm run e2e -w web"
+          - "buildkite-agent artifact upload web/screenshots/shop.png"
+          - "buildkite-agent annotate --style info --context shop '<img src=\"artifact://web/screenshots/shop.png\" alt=\"Kite Shop\" height=\"300\">'"
+
+  - label: ":bust_in_silhouette: Account"
+    key: account
+    if_changed: ["account/**", "*.{json,mjs,cjs}", ".buildkite/**"]
+    command:
+      - ".buildkite/scripts/install.sh"
+      - "npm run lint -w account"
+      - "npm test -w account"
+
+  - wait
+
+  - group: ":rocket: Deploy"
+    if: build.branch == "main"
+    steps:
+      - block: ":rocket: Deploy to production?"
+        key: approve-deploy
+
+      - label: ":rocket: Deploy"
+        depends_on: [web, account, approve-deploy]
+        concurrency: 1
+        concurrency_group: "${BUILDKITE_PIPELINE_SLUG}/deploy"
+        command: "bash .buildkite/scripts/deploy.sh"
+        secrets:
+          - DEPLOY_KEY
